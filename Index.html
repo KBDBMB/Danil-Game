@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <header class="header1">Danil's tic-tac-toe</header>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<style>
+
+body {
+    background-color: #baa99a;
+    margin: 0;
+}
+
+.header1 {
+    color: #3c244b;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px 0;
+}
+
+table {
+    width: 90%; /* Make the table responsive */
+    max-width: 300px; /* Limit the table's maximum width */
+    margin: 10px auto; /* Center the table horizontally */
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    max-width: 300px;
+    width: 90%;
+    margin: 20px auto;
+}
+
+.turn, .roundname {
+    text-align: center;
+    font-weight: bold;
+    margin: 5px auto;
+    display: block;
+    width: 100%;
+}
+
+.turn {
+    color: #4349b9;
+    font-size: 14px;
+}
+
+.roundname {
+    color: #0d0d0e;
+    font-size: 16px;
+}
+
+.box {
+    aspect-ratio: 1 / 1;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #799595;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease-in-out;
+}
+
+.box:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    background-color: #637a7a;
+}
+
+.box:active {
+    background-color: #aaa;
+    transform: scale(1.0);
+}
+
+.button-container {
+    text-align: center;
+    margin: 20px auto;
+}
+
+.restart-button, .reset-score-button {
+    padding: 10px 15px;
+    font-size: 12px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin: 5px;
+}
+
+.restart-button:hover, .reset-score-button:hover {
+    background-color: #3e8e41;
+}
+
+.reset-score-button {
+    background-color: #9f1515;
+}
+
+.reset-score-button:hover {
+    background-color: #660000;
+}
+
+.score-table {
+    font-size: 12px;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 300px;
+    font-weight: bold;
+}
+
+.x-name, .o-name, .x-namew, .o-namew {
+    background-color: transparent;
+}
+
+.x-name, .x-namew {
+    color: #4349b9;
+}
+
+.o-name, .o-namew {
+    color: #660000;
+}
+
+.x-namew, .o-namew {
+    background-color: #4CAF50;
+}
+
+</style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cells = document.querySelectorAll(".box");
+            const turn = document.querySelector(".turn");
+            const lastgame = document.getElementById("lastgame");
+            let currentPlayer = "X";
+            let gameEnded = false;
+            let moves = 0;
+            let xScore = 0;
+            let oScore = 0;
+            let drawScore = 0;
+            let totalScore = 0;
+            let R1 = 1;           
+
+            cells.forEach((cell) => {
+                cell.addEventListener("click", handleCellClick);
+            });
+
+            const resetButton = document.querySelector(".restart-button");
+            resetButton.addEventListener("click", restartGame);
+
+            const resetScoreButton = document.querySelector(".reset-score-button");
+            resetScoreButton.addEventListener("click", resetScore);
+
+            function handleCellClick(event) {
+                const cell = event.target;
+               
+                if (!cell.textContent && !gameEnded) {
+                    cell.textContent = currentPlayer;
+                    cell.style.backgroundColor = currentPlayer === "X" ? "#4349b9" : "#660000";
+                    turn.textContent = currentPlayer === "X" ? "Turn for 0" : "Turn for X";
+                    turn.style.color = currentPlayer === "X" ? "#660000" : "#4349b9";
+                    moves++;
+                    if (checkWin(currentPlayer)) {                        
+                        gameEnded = true;
+                        if (currentPlayer   === "X") {
+                            xScore++;
+                        } else {
+                            oScore++;
+                        }
+                        
+                        
+                        setTimeout(() => {alert(`${currentPlayer} wins Round ${totalScore}!`);restartGame();}, 150); 
+                        
+                        updateScoreTable();
+                        lastgame.textContent = currentPlayer + " wins Round " + totalScore;
+
+                    } else if (moves === 9) {
+                        gameEnded = true;
+                        drawScore++;
+                       
+                        
+                        setTimeout(() => {alert(`It's a draw for Round ${totalScore}!`);restartGame();}, 150);
+                        
+                        updateScoreTable();
+                        lastgame.textContent = "Draw for Round " + totalScore;
+
+                    } else {
+                        currentPlayer = currentPlayer === "X" ? "O" : "X";
+                    }
+                    
+                }
+                
+            }
+
+            function checkWin(player) {
+                const winningPatterns = [
+                    [0, 1, 2], // Rows
+                    [3, 4, 5],
+                    [6, 7, 8],
+                    [0, 3, 6], // Columns
+                    [1, 4, 7],
+                    [2, 5, 8],
+                    [0, 4, 8], // Diagonals
+                    [2, 4, 6]
+                ];
+
+                for (const pattern of winningPatterns) {
+                    const [a, b, c] = pattern;
+                    if (cells[a].textContent === player &&
+                        cells[b].textContent === player &&
+                        cells[c].textContent === player) {
+                        return true; // Player wins
+                    }
+                }
+
+                return false; // No winner yet
+            }
+
+            function restartGame() {
+                cells.forEach((cell) => {
+                    cell.textContent = "";                    
+                    cell.style.backgroundColor = "";
+                    
+                });
+                currentPlayer = "X";
+                turn.textContent = "Turn for X";
+                turn.style.color = "";
+                gameEnded = false;
+                moves = 0;
+                console.log("Restart Game is Done");
+            }
+
+            function resetScore() {
+                xScore = 0;
+                oScore = 0;
+                drawScore = 0;
+                lastgame.textContent = "Not started yet";
+                updateScoreTable();
+            }
+
+            function updateScoreTable() {
+                const xScoreElement = document.querySelector(".x-score");
+                const oScoreElement = document.querySelector(".o-score");
+                const drawScoreElement = document.querySelector(".draw-score");
+                const totalScoreElement = document.querySelector(".total-score");;
+
+                xScoreElement.textContent = xScore;
+                oScoreElement.textContent = oScore;
+                drawScoreElement.textContent = drawScore;
+                
+                totalScore = xScore + oScore + drawScore;
+                R1 = totalScore + 1
+                totalScoreElement.textContent = totalScore;
+                console.log(`xScore: ${xScore}, oScore: ${oScore}, totalScore: ${totalScore}`); 
+                updatestyle()
+     
+            }
+
+            function updatestyle() {
+                const xname = document.getElementById("x-name");
+                const oname = document.getElementById("o-name");
+                const winstatus = document.getElementById("winstatus");
+                const roundname = document.getElementById("roundname");
+                roundname.textContent = "Round " + R1;
+
+                if (xScore > oScore) {
+                    xname.className = "x-namew";
+                    oname.className = "o-name";
+                    wins1 = "X is winning";
+                    winstatus.textContent = wins1;            
+                    console.log(`${wins1}, Round ${R1}`);
+
+                } else if (xScore < oScore) {
+                    xname.className = "x-name";
+                    oname.className = "o-namew";
+                    wins1 = "O is winning";
+                    winstatus.textContent = wins1;
+                    console.log(`${wins1}, Round ${R1}`);
+
+                } else if (totalScore < 1) {
+
+                    xname.className = "x-name";
+                    oname.className = "o-name";                    
+                    wins1 = "";
+                    winstatus.textContent = wins1;
+                    console.log(`Reset Score is Done ${wins1}`);
+
+                }
+                else {
+
+                    xname.className = "x-name";
+                    oname.className = "o-name";                    
+                    wins1 = "Draw so far";
+                    winstatus.textContent = wins1;
+                    console.log(`${wins1}, Round ${R1}`);
+
+                }
+            }
+        });
+    </script>
+
+    <script defer data-domain="danil-tic-tac-toe.tiiny.site" src="https://analytics.tiiny.site/js/new1.js"></script>
+    <script type="text/javascript" src="https://tiiny.host/ad-n1.js">
+
+    </script>
+
+</head>
+
+<body>
+    <table>
+        <tr>    
+            <td id="roundname" class="roundname">Round 1</td> 
+            
+         </tr>
+         <tr>    
+           
+            <td id="turn" class="turn">Turn for X</td>
+         </tr>
+
+     </table>
+    <div class="container">
+      
+        
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+    </div>
+    <div class="button-container">
+        <button class="restart-button">Restart Game</button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="reset-score-button">Reset Score</button><br><br>
+        <div class="score-table">
+         
+
+            <table>
+
+                <tr>
+                    <th>Last Game:</th>
+                    <td></td>                       
+                    <td id="lastgame" class="lastgame">Not started yet</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td></td>                       
+                    <td></td>
+                </tr>
+         
+           
+                <tr>
+                    <th>Tournament:&nbsp&nbsp&nbsp&nbsp&nbsp</th>
+                    <td></td>                       
+                    <td id="winstatus" class="winstatus"></td>
+                </tr>
+
+     
+
+                <tr>
+                    <th></th>
+                    <td></td>                       
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <th id="x-name" class="x-name">X Score:</th>                
+                    <td></td>
+                    <td class="x-score">0</td>
+                </tr>
+
+                <tr>
+                    <th id="o-name" class="o-name">O Score:</th>                 
+                    <td></td>
+                    <td class="o-score">0</td>
+                </tr>
+
+                <tr>
+                    <th>Draws:</th>                 
+                    <td></td>
+                    <td class="draw-score">0</td>
+                </tr>
+
+                <tr>
+                    <th>Total Rounds:</th>                 
+                    <td></td>
+                    <td class="total-score">0</td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
