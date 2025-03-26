@@ -88,7 +88,7 @@ table {
 
 .restart-button, .reset-score-button {
     padding: 10px 15px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     background-color: #4CAF50;
     color: #fff;
@@ -249,7 +249,7 @@ table {
                 if (!cell.textContent && !gameEnded) {
                     cell.textContent = currentPlayer;
                     cell.style.backgroundColor = currentPlayer === "X" ? "#4349b9" : "#660000";
-                    turn.textContent = currentPlayer === "X" ? "Turn for 0" : "Turn for X";
+                    turn.textContent = currentPlayer === "X" ? "Turn for 0 (P2)" : "Turn for X (P1)";
                     turn.style.color = currentPlayer === "X" ? "#660000" : "#4349b9";
                     moves++;
                     if (checkWin(currentPlayer)) {                        
@@ -314,7 +314,7 @@ table {
                         lastgame.textContent = "Draw for Round " + totalScore;
                     } else {
                         currentPlayer = "X";
-                        turn.textContent = "Turn for X";
+                        turn.textContent = "Turn for X (P1)";
                         turn.style.color = "#4349b9";
                     }
                 }
@@ -487,7 +487,7 @@ table {
     </div>
     <div style="display: flex; justify-content: space-between; width: 90%; max-width: 300px; margin: 10px auto;">
         <div id="roundname" class="roundname">Round 1</div>
-        <div id="turn" class="turn">Turn for X</div>
+        <div id="turn" class="turn">Turn for X (P1)</div>
     </div>
     <div class="container">
       
