@@ -3,6 +3,7 @@
 
 <head>
     <header class="header1">Danil's tic-tac-toe</header>
+    <img id="mode-image" class="mode-image" src="2P.png" alt="Game Mode Image" style="Width: auto; max-height: 60px">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
@@ -10,7 +11,7 @@
 <style>
 
 body {
-    background-color: #baa99a;
+    background-color: #d2cebb;
     margin: 0;
 }
 
@@ -32,8 +33,8 @@ table {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
-    max-width: 300px;
-    width: 90%;
+    max-width: 250px; /* Reduced max-width */
+    width: 80%; /* Reduced width */
     margin: 20px auto;
 }
 
@@ -61,7 +62,7 @@ table {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 18px; /* Further reduced font size */
     cursor: pointer;
     color: #fff;
     background-color: #799595;
@@ -162,6 +163,38 @@ table {
     opacity: 0;
 }
 
+.mode-selection {
+    text-align: center;
+    margin: 20px auto;
+}
+
+.mode-button {
+    padding: 10px 15px;
+    font-size: 12px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin: 5px;
+}
+
+.mode-button:hover {
+    background-color: #3e8e41;
+}
+
+.mode-button.active {
+    background-color: #3e8e41;
+}
+
+.mode-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 100px;
+    height: auto;
+}
+
 </style>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -176,6 +209,9 @@ table {
             let drawScore = 0;
             let totalScore = 0;
             let R1 = 1;           
+            let gameMode = "2 Players"; // Default game mode
+            let startingPlayer = "X"; // Default starting player
+            const modeImage = document.getElementById("mode-image");
 
             cells.forEach((cell) => {
                 cell.addEventListener("click", handleCellClick);
@@ -187,6 +223,25 @@ table {
 
             const resetScoreButton = document.querySelector(".reset-score-button");
             resetScoreButton.addEventListener("click", resetScore);
+
+            const modeButtons = document.querySelectorAll(".mode-button");
+            modeButtons.forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    gameMode = event.target.textContent;
+                    modeButtons.forEach(btn => btn.classList.remove("active"));
+                    event.target.classList.add("active");
+                    updateModeImage();
+                    restartGame();
+                });
+            });
+
+            function updateModeImage() {
+                if (gameMode === "2 Players") {
+                    modeImage.src = "2P.png";
+                } else if (gameMode === "VS AI") {
+                    modeImage.src = "AI.gif";
+                }
+            }
 
             function handleCellClick(event) {
                 const cell = event.target;
@@ -223,10 +278,67 @@ table {
 
                     } else {
                         currentPlayer = currentPlayer === "X" ? "O" : "X";
+                        if (gameMode === "VS AI" && currentPlayer === "O") {
+                            setTimeout(aiMove, 500);
+                        }
                     }
                     
                 }
                 
+            }
+
+            function aiMove() {
+                const emptyCells = Array.from(cells).filter(cell => !cell.textContent);
+                if (emptyCells.length > 0) {
+                    const bestMove = findBestMove();
+                    bestMove.textContent = "O";
+                    bestMove.style.backgroundColor = "#660000";
+                    moves++;
+                    if (checkWin("O")) {
+                        gameEnded = true;
+                        oScore++;
+                        setTimeout(() => {
+                            showToast(`O wins Round ${totalScore}!`);
+                            restartGame();
+                        }, 150);
+                        updateScoreTable();
+                        lastgame.textContent = "O wins Round " + totalScore;
+                    } else if (moves === 9) {
+                        gameEnded = true;
+                        drawScore++;
+                        setTimeout(() => {
+                            showToast(`It's a draw for Round ${totalScore}!`);
+                            restartGame();
+                        }, 150);
+                        updateScoreTable();
+                        lastgame.textContent = "Draw for Round " + totalScore;
+                    } else {
+                        currentPlayer = "X";
+                        turn.textContent = "Turn for X";
+                        turn.style.color = "#4349b9";
+                    }
+                }
+            }
+
+            function findBestMove() {
+                const emptyCells = Array.from(cells).filter(cell => !cell.textContent);
+                for (const cell of emptyCells) {
+                    cell.textContent = "O";
+                    if (checkWin("O")) {
+                        cell.textContent = "";
+                        return cell;
+                    }
+                    cell.textContent = "";
+                }
+                for (const cell of emptyCells) {
+                    cell.textContent = "X";
+                    if (checkWin("X")) {
+                        cell.textContent = "";
+                        return cell;
+                    }
+                    cell.textContent = "";
+                }
+                return emptyCells[Math.floor(Math.random() * emptyCells.length)];
             }
 
             function checkWin(player) {
@@ -259,11 +371,15 @@ table {
                     cell.style.backgroundColor = "";
                     
                 });
-                currentPlayer = "X";
-                turn.textContent = "Turn for X";
-                turn.style.color = "";
+                currentPlayer = startingPlayer;
+                turn.textContent = `Turn for ${currentPlayer}`;
+                turn.style.color = currentPlayer === "X" ? "#4349b9" : "#660000";
                 gameEnded = false;
                 moves = 0;
+                startingPlayer = startingPlayer === "X" ? "O" : "X"; // Rotate starting player
+                if (gameMode === "VS AI" && currentPlayer === "O") {
+                    setTimeout(aiMove, 500);
+                }
                 console.log("Restart Game is Done");
             }
 
@@ -355,28 +471,24 @@ table {
                     }, 500);
                 }, 2000);
             }
+
+            updateModeImage(); // Initial call to set the default image
         });
     </script>
-
-    <script defer data-domain="danil-tic-tac-toe.tiiny.site" src="https://analytics.tiiny.site/js/new1.js"></script>
-    <script type="text/javascript" src="https://tiiny.host/ad-n1.js">
-
-    </script>
+    
+   
 
 </head>
 
 <body>
-    <table>
-        <tr>    
-            <td id="roundname" class="roundname">Round 1</td> 
-            
-         </tr>
-         <tr>    
-           
-            <td id="turn" class="turn">Turn for X</td>
-         </tr>
-
-     </table>
+    <div class="mode-selection">
+        <button class="mode-button">2 Players</button>
+        <button class="mode-button">VS AI</button>
+    </div>
+    <div style="display: flex; justify-content: space-between; width: 90%; max-width: 300px; margin: 10px auto;">
+        <div id="roundname" class="roundname">Round 1</div>
+        <div id="turn" class="turn">Turn for X</div>
+    </div>
     <div class="container">
       
         
@@ -392,7 +504,7 @@ table {
     </div>
     <div class="button-container">
         <button class="restart-button">Restart Game</button>&nbsp;&nbsp;&nbsp;&nbsp;
-        <button class="reset-score-button">Reset Score</button><br><br>
+        <button class="reset-score-button">Reset Score</button><br>
         <div class="score-table">
          
 
