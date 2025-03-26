@@ -133,6 +133,35 @@ table {
     background-color: #4CAF50;
 }
 
+.toast {
+    visibility: hidden;
+    max-width: 90%;
+    margin: 0 auto;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 20px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    top: 10%;
+    font-size: 25px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: visibility 0s, opacity 0.5s linear;
+}
+
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.toast.hide {
+    visibility: hidden;
+    opacity: 0;
+}
+
 </style>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -150,6 +179,7 @@ table {
 
             cells.forEach((cell) => {
                 cell.addEventListener("click", handleCellClick);
+                cell.addEventListener("touchend", handleTouchEnd);
             });
 
             const resetButton = document.querySelector(".restart-button");
@@ -176,7 +206,7 @@ table {
                         }
                         
                         
-                        setTimeout(() => {alert(`${currentPlayer} wins Round ${totalScore}!`);restartGame();}, 150); 
+                        setTimeout(() => {showToast(`${currentPlayer} wins Round ${totalScore}!`);restartGame();}, 150); 
                         
                         updateScoreTable();
                         lastgame.textContent = currentPlayer + " wins Round " + totalScore;
@@ -186,7 +216,7 @@ table {
                         drawScore++;
                        
                         
-                        setTimeout(() => {alert(`It's a draw for Round ${totalScore}!`);restartGame();}, 150);
+                        setTimeout(() => {showToast(`It's a draw for Round ${totalScore}!`);restartGame();}, 150);
                         
                         updateScoreTable();
                         lastgame.textContent = "Draw for Round " + totalScore;
@@ -302,6 +332,28 @@ table {
                     console.log(`${wins1}, Round ${R1}`);
 
                 }
+            }
+
+            function handleTouchEnd(event) {
+                event.target.style.transform = "scale(1.0)";
+                event.target.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+                event.target.style.backgroundColor = "#799595";
+            }
+
+            function showToast(message) {
+                const toast = document.createElement("div");
+                toast.className = "toast";
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add("show");
+                }, 100);
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 500);
+                }, 2000);
             }
         });
     </script>
